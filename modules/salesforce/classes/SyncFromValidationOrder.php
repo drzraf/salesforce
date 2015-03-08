@@ -1,0 +1,191 @@
+<?php
+/**
+ * 2012-2015 ZL Development
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@zakarialounes.fr so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to https://www.zakarialounes.fr for more information.
+ *
+ *  @author    ZL Development <me@zakarialounes.fr>
+ *  @copyright 2012-2015 ZL Development
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+require_once('SalesforceEntity.php');
+
+class SyncFromValidationOrder extends SalesforceEntity {
+
+    public $context;
+
+    public function setContext($context) {
+        $this->context = $context;
+
+        return ($this);
+    }
+
+    public function getContext() {
+        return ($this->context);
+    }
+
+    public function parseProduct($products) {
+        $product_list = "";
+        $product_size = count($products);
+        if ($product_size > 0) {
+            for ($i = 0; $i < $product_size; $i++) {
+                $product_list .= $products[$i]['name'] . ";";
+            }
+        }
+
+        return ($product_list);
+    }
+
+    public function parseChoixPaiement($addon) {
+        $payment = "ERROR";
+        if (is_object($addon)) {
+            $paymentAddons = Array(
+                'paybox' => 'CB',
+                'worldpay' => 'CB',
+                'sagepay' => 'CB',
+                'kwixo' => 'CB',
+                'cmcic' => 'CB',
+                'paypal' => 'PA',
+                'cheque' => 'CH',
+                'bankwire' => 'VIR'
+            );
+            if (isset($paymentAddons[$addon->module_name])) {
+                $payment = $paymentAddons[$addon->module_name];
+            } else {
+                $payment = $addon->module_name;
+            }
+        }
+
+        return ($payment);
+    }
+
+    public function parseEtat($addon) {
+        $etat = "ERROR";
+        if (is_object($addon)) {
+            $paymentAddons = Array(
+                'En attente du paiement par virement bancaire' => 'attente',
+                'En attente du paiement par chèque' => 'attente',
+                'Paiement accepté' => 'valide',
+                'Préparation en cours' => 'valide',
+                'En cours de livraison' => 'valide',
+                'Livré' => 'valide',
+                'Annulé' => 'erreur',
+                'Remboursé' => 'erreur',
+                'Erreur de paiement' => 'erreur',
+                'En attente de réapprovisionnement' => 'attente',
+                'En attente du paiement par virement bancaire' => 'attente',
+                'En attente du paiement par PayPal' => 'attente',
+                'Paiement à distance accepté' => 'valide',
+                'Autorisation accepté par PayPal' => 'valide'
+            );
+            if (isset($paymentAddons[$addon->name[1]])) {
+                $etat = $paymentAddons[$addon->name[1]];
+            } else {
+                $etat = $addon->name[1];
+            }
+        }
+
+        return ($etat);
+    }
+
+    public function setCustomerAddressFromContext($customer) {
+        $address = new Address(Address::getFirstCustomerAddressId($customer->id));
+        $this
+                ->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
+                ->setAdresse($address->address1)
+                ->setAdresseComplement($address->address2)
+                ->setCodePostal($address->postcode)
+                ->setVille($address->city)
+                ->setPays($address->country)
+        ;
+
+        return ($this);
+    }
+
+    public function setCustomerFromContext() {
+        $customer = $this->context->customer;
+        $this
+                ->setIdClientBoutique($customer->id)
+                ->setNom($customer->lastname)
+                ->setPrenom($customer->firstname)
+                ->setCourriel($customer->email)
+                ->setNewsletter($customer->newsletter)
+                ->setCustomerAddressFromContext($customer)
+        ;
+
+        return ($this);
+    }
+
+    public function setCartFromContext() {
+        $cart = new Cart($this->context->cart->id);
+
+        $this
+                ->setPanier($this->parseProduct($cart->getProducts()))
+                ->setMontant($cart->getOrderTotal())
+        ;
+
+        return ($this);
+    }
+
+    public function setOrderFromContext() {
+        $orderId = Order::getOrderByCartId($this->context->cart->id);
+        $order = new Order($orderId);
+
+        $this
+                ->setDate($order->date_upd)
+                ->setChoixPaiement($this->parseChoixPaiement($order->getCurrentOrderState()))
+                ->setEtat($this->parseEtat($order->getCurrentOrderState()))
+                ->setCommentaire($order->getFirstMessage())
+        ;
+
+        return ($this);
+    }
+
+    public function setErrorsFromContext($options) {
+        if (isset($options['paybox'])) {
+            $this->erreurPaybox = $options['paybox'];
+        } else if (isset($options['paypal'])) {
+            $this->erreurPaypal = $options['paypal'];
+        }
+
+        return ($this);
+    }
+
+    public function setExtras($options) {
+        $shop = new ShopURL($this->context->cart->id_shop);
+        $this
+                ->setURLInterface($shop->getURL())
+                ->setAdresseIP(preg_replace("#\\000#", '', $_SERVER['REMOTE_ADDR']))
+                ->setIntitule('Achats')
+                ->setErrorsFromContext($options)
+        ;
+
+        return ($this);
+    }
+
+    public static function initFromContext($context, $options = NULL) {
+        $sync = new SyncFromValidationOrder();
+        $sync
+                ->setContext($context)
+                ->setCustomerFromContext()
+                ->setCartFromContext()
+                ->setOrderFromContext()
+                ->setExtras($options)
+        ;
+    }
+
+}
