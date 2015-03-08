@@ -22,26 +22,90 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<div class="panel">
-	<h3><i class="icon icon-credit-card"></i> {l s='Salesforce' mod='salesforce'}</h3>
-	<p>
-		<strong>{l s='Here is my new payment module!' mod='salesforce'}</strong><br />
-		{l s='Thanks to PrestaShop, now I have a great module.' mod='salesforce'}<br />
-		{l s='I can configure it using the following configuration form.' mod='salesforce'}
-	</p>
-	<br />
-	<p>
-		{l s='This module will boost your sales!' mod='salesforce'}
-	</p>
-</div>
+<style type="text/css">
+    .table-responsive {
+        display: -moz-box;
+        overflow: scroll;
+    }
+</style>
 
 <div class="panel">
-	<h3><i class="icon icon-tags"></i> {l s='Documentation' mod='salesforce'}</h3>
-	<p>
-		&raquo; {l s='You can get a PDF documentation to configure this module' mod='salesforce'} :
-		<ul>
-			<li><a href="#" target="_blank">{l s='English' mod='salesforce'}</a></li>
-			<li><a href="#" target="_blank">{l s='French' mod='salesforce'}</a></li>
-		</ul>
-	</p>
+    <h3><i class="icon icon-credit-card"></i> {l s='Salesforce' mod='salesforce'}</h3>
+
+    <table class="table table-stripped table-hover table-responsive">
+        <thead>
+            <tr>
+                <th colspan="2">Actions</th>
+                <th>id</th>
+                <th>montant</th>
+                <th>date</th>
+                <th>choixPaiement</th>
+                <th>etat</th>
+                <th>erreurPaybox</th>
+                <th>erreurPaypal</th>
+                <th>estAdhesion</th>
+                <th>recuFiscal</th>
+                <th>commentaire</th>
+                <th>URLInterface</th>
+                <th>adresseIP</th>
+                <th>intitule</th>
+                <th>panier</th>
+                <th>id_client_boutique</th>
+                <th>nom</th>
+                <th>prenom</th>
+                <th>courriel</th>
+                <th>telephone</th>
+                <th>adresse</th>
+                <th>adresseComplement</th>
+                <th>codePostal</th>
+                <th>ville</th>
+                <th>pays</th>
+                <th>newsletter</th>
+                <th>pasDePapier</th>
+                <th>syncDate</th>
+                <th>SyncEtat</th>
+                <th>SyncErreur</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+        {foreach from=$entry item=foo}
+            <tr>
+                <td colspan="2">
+                    <button class="btn btn-default" title="Marqué toSync">toSync</button>
+                    <button class="btn btn-success" title="Marqué synchronisé">synchronised</button>
+                </td>
+                <td>{$foo['id']}</td>
+                <td>{$foo['montant']} €</td>
+                <td>{$foo['date']}</td>
+                <td>{$foo['choixPaiement']}</td>
+                <td>{$foo['etat']}</td>
+                <td>{$foo['erreurPaybox']}</td>
+                <td>{$foo['erreurPaypal']}</td>
+                <td>{$foo['estAdhesion']}</td>
+                <td>{$foo['recuFiscal']}</td>
+                <td>{$foo['commentaire']}</td>
+                <td>{$foo['URLInterface']}</td>
+                <td>{$foo['adresseIP']}</td>
+                <td>{$foo['intitule']}</td>
+                <td>{$foo['panier']}</td>
+                <td>{$foo['id_client_boutique']}</td>
+                <td>{$foo['nom']}</td>
+                <td>{$foo['prenom']}</td>
+                <td>{$foo['courriel']}</td>
+                <td>{$foo['telephone']}</td>
+                <td>{$foo['adresse']}</td>
+                <td>{$foo['adresseComplement']}</td>
+                <td>{$foo['codePostal']}</td>
+                <td>{$foo['ville']}</td>
+                <td>{$foo['pays']}</td>
+                <td>{$foo['newsletter']}</td>
+                <td>{$foo['pasDePapier']}</td>
+                <td>{$foo['syncDate']}</td>
+                <td>{$foo['syncEtat']}</td>
+                <td>{$foo['syncErreur']}</td>
+            </tr>
+        {/foreach}
+        </tbody>
+    </table>
 </div>

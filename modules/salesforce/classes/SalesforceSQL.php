@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2012-2015 ZL Development
  *
@@ -22,7 +23,6 @@
  *  @copyright 2012-2015 ZL Development
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 ini_set('display_errors', 1);
 ini_set('errors_reporting', E_ALL);
 
@@ -43,27 +43,23 @@ class SalesforceSQL {
                 . "'" . $entity->getEtat() . "', "
                 . "'" . $entity->getErreurPaybox() . "', "
                 . "'" . $entity->getErreurPaypal() . "', "
-                
                 . "'" . $entity->getEstAdhesion() . "', "
                 . "'" . $entity->getRecuFiscal() . "', "
                 . "'" . addslashes($entity->getCommentaire()) . "', "
                 . "'" . $entity->getURLInterface() . "', "
                 . "'" . $entity->getAdresseIP() . "', "
-                
                 . "'" . $entity->getIntitule() . "', "
                 . "'" . $entity->getPanier() . "', "
                 . "'" . $entity->getIdClientBoutique() . "', "
                 . "'" . addslashes($entity->getNom()) . "', "
                 . "'" . addslashes($entity->getPrenom()) . "', "
                 . "'" . $entity->getCourriel() . "', "
-                
                 . "'" . $entity->getTelephone() . "', "
                 . "'" . addslashes($entity->getAdresse()) . "', "
                 . "'" . addslashes($entity->getAdresseComplement()) . "', "
                 . "'" . $entity->getCodePostal() . "', "
                 . "'" . addslashes($entity->getVille()) . "', "
                 . "'" . addslashes($entity->getPays()) . "', "
-                
                 . "'" . $entity->getNewsletter() . "', "
                 . "'" . $entity->getPasDePapier() . "', "
                 . "'" . $entity->getSyncEtat() . "'"
@@ -72,6 +68,10 @@ class SalesforceSQL {
         if (!Db::getInstance()->Execute($sql)) {
             return false;
         }
+    }
+
+    public static function getAll() {
+        return (Db::getInstance()->ExecuteS("SELECT * FROM `" . _DB_PREFIX_ . "achats_clients_sync`"));
     }
 
 }

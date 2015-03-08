@@ -27,6 +27,7 @@ if (!defined('_PS_VERSION_'))
 	exit;
 
 require_once('classes/SalesforceInstall.php');
+require_once('classes/SalesforceSQL.php');
 
 class Salesforce extends Module
 {
@@ -67,7 +68,9 @@ class Salesforce extends Module
             return;
         }
 
+        
 		$this->context->smarty->assign('module_dir', $this->_path);
+		$this->context->smarty->assign('entry', SalesforceSQL::getAll());
 		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
 		return $output;
