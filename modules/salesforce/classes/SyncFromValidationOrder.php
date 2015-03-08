@@ -22,7 +22,9 @@
  *  @copyright 2012-2015 ZL Development
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 require_once('SalesforceEntity.php');
+require_once('SalesforceSQL.php');
 
 class SyncFromValidationOrder extends SalesforceEntity {
 
@@ -51,7 +53,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
     }
 
     public function parseChoixPaiement($addon) {
-        $payment = "ERROR";
+        $payment = 'PR';
         if (is_object($addon)) {
             $paymentAddons = Array(
                 'paybox' => 'CB',
@@ -61,24 +63,24 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 'cmcic' => 'CB',
                 'paypal' => 'PA',
                 'cheque' => 'CH',
-                'bankwire' => 'VIR'
+                'bankwire' => 'VI'
             );
             if (isset($paymentAddons[$addon->module_name])) {
                 $payment = $paymentAddons[$addon->module_name];
             } else {
-                $payment = $addon->module_name;
+                $payment = 'PR';
             }
         }
 
         return ($payment);
     }
-
+    
     public function parseEtat($addon) {
-        $etat = "ERROR";
+        $etat = 'erreur';
         if (is_object($addon)) {
             $paymentAddons = Array(
-                'En attente du paiement par virement bancaire' => 'attente',
-                'En attente du paiement par chèque' => 'attente',
+                'Autorisation accepté par PayPal' => 'valide',
+                'Paiement à distance accepté' => 'valide',
                 'Paiement accepté' => 'valide',
                 'Préparation en cours' => 'valide',
                 'En cours de livraison' => 'valide',
@@ -88,18 +90,41 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 'Erreur de paiement' => 'erreur',
                 'En attente de réapprovisionnement' => 'attente',
                 'En attente du paiement par virement bancaire' => 'attente',
-                'En attente du paiement par PayPal' => 'attente',
-                'Paiement à distance accepté' => 'valide',
-                'Autorisation accepté par PayPal' => 'valide'
+                'En attente du paiement par chèque' => 'attente',
+                'En attente du paiement par PayPal' => 'attente'
             );
             if (isset($paymentAddons[$addon->name[1]])) {
                 $etat = $paymentAddons[$addon->name[1]];
             } else {
-                $etat = $addon->name[1];
+                $etat = 'test';
             }
         }
 
         return ($etat);
+    }
+
+    public function setNewsletter($newsletter) {
+        if ($newsletter == 0 || empty($newsletter)) {
+            $res = 'non';
+        } else {
+            $res = 'oui';
+        }
+
+        parent::setNewsletter($res);
+
+        return ($this);
+    }
+
+    public function setPasDePapier($pasDePapier) {
+        if ($pasDePapier == 0 || empty($pasDePapier)) {
+            $res = 'non';
+        } else {
+            $res = 'oui';
+        }
+
+        parent::setPasDePapier($res);
+
+        return ($res);
     }
 
     public function setCustomerAddressFromContext($customer) {
@@ -146,6 +171,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
         $order = new Order($orderId);
 
         $this
+                ->setOrderId($orderId)
                 ->setDate($order->date_upd)
                 ->setChoixPaiement($this->parseChoixPaiement($order->getCurrentOrderState()))
                 ->setEtat($this->parseEtat($order->getCurrentOrderState()))
@@ -185,7 +211,9 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 ->setCartFromContext()
                 ->setOrderFromContext()
                 ->setExtras($options)
+                ->setSyncEtat("tosync")
         ;
+        SalesforceSQL::save($sync);
     }
 
 }
