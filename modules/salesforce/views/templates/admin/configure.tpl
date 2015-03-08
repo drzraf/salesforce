@@ -24,7 +24,12 @@
 
 <style type="text/css">
     .table-responsive {
+        display: flex;
+        display: -o-box;
+        display: -webkit-box;
         display: -moz-box;
+        display: -ms-flexbox;
+        display: -webkit-box;
         overflow: scroll;
     }
 </style>
