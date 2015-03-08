@@ -1,1 +1,2 @@
-modules/salesforce/nbproject
+nbproject
+modules/salesforce/config_*.xml
