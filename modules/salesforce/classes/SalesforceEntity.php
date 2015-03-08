@@ -25,6 +25,7 @@
 
 class SalesforceEntity {
 
+    public $orderId;
     public $montant;
     public $date;
     public $choixPaiement;
@@ -53,6 +54,12 @@ class SalesforceEntity {
     public $syncDate;
     public $syncEtat;
     public $syncErreur;
+
+    public function setOrderId($orderId) {
+        $this->orderId = $orderId;
+
+        return ($this);
+    }
 
     public function setMontant($montant) {
         $this->montant = $montant;
@@ -220,6 +227,10 @@ class SalesforceEntity {
         $this->syncErreur = $syncErreur;
 
         return ($this);
+    }
+
+    public function getOrderId() {
+        return ($this->orderId);
     }
 
     public function getMontant() {
