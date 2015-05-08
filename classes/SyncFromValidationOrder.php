@@ -79,24 +79,32 @@ class SyncFromValidationOrder extends SalesforceEntity {
         $etat = 'erreur';
         if (is_object($addon)) {
             $paymentAddons = Array(
-                'Autorisation accepté par PayPal' => 'valide',
-                'Paiement à distance accepté' => 'valide',
+                'En attente du paiement par chèque' => 'attente',
+                'En attente de paiement par chèque' => 'attente',
                 'Paiement accepté' => 'valide',
                 'Préparation en cours' => 'valide',
+                'En cours de préparation' => 'valide',
                 'En cours de livraison' => 'valide',
+                'Expedié' => 'valide',
                 'Livré' => 'valide',
                 'Annulé' => 'erreur',
                 'Remboursé' => 'erreur',
                 'Erreur de paiement' => 'erreur',
                 'En attente de réapprovisionnement' => 'attente',
+                'En attente de réapprovisionnement (payé)' => 'attente',
                 'En attente du paiement par virement bancaire' => 'attente',
-                'En attente du paiement par chèque' => 'attente',
-                'En attente du paiement par PayPal' => 'attente'
+                'En attente de virement bancaire' => 'attente',
+                'En attente du paiement PayPal' => 'attente',
+                'En attente de paiement PayPal' => 'attente',
+                'Paiement à distance accepté' => 'valide',
+                'En attente de réapprovisionnement (non payé)' => 'attente',
+                'En attente de paiement à la livraison' => 'attente',
+                'Autorisation accepté par PayPal' => 'valide',
             );
             if (isset($paymentAddons[$addon->name[1]])) {
                 $etat = $paymentAddons[$addon->name[1]];
             } else {
-                $etat = 'test';
+                $etat = 'erreur';
             }
         }
 
