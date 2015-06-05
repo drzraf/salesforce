@@ -34,6 +34,7 @@ class SalesforceInstall {
                 `id` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
                 `montant` decimal(17,2) unsigned NOT NULL, 
                 `date` datetime NOT NULL,
+                -- credit card, Paypal, Check, Transfer, PR?
                 `choixPaiement` set('CB','PA','CH','VI','PR') COLLATE utf8_unicode_ci NOT NULL,
                 `etat` set('attente','valide','erreur','test') COLLATE utf8_unicode_ci NOT NULL,
                 `erreurPaybox` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL,
