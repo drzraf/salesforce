@@ -52,7 +52,8 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return ($product_list);
     }
 
-    public function parseChoixPaiement($addon) {
+    // $payment_method = 4th argument passed to validateOrder() by payment modules
+    public function parseChoixPaiement($addon, $module = NULL, $payment_method = NULL ) {
         $payment = 'PR';
         if (is_object($addon)) {
             $paymentAddons = Array(
@@ -66,13 +67,12 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 'bankwire' => 'VI'
             );
             if (isset($paymentAddons[$addon->module_name])) {
-                $payment = $paymentAddons[$addon->module_name];
-            } else {
-                $payment = 'PR';
+                return $paymentAddons[$addon->module_name];
             }
         }
-
-        return ($payment);
+        if ($payment_method == 'CB avec Paybox') return 'CB';
+        // may come other tests over $module AND/OR $payment_method
+        return 'PR'; // default
     }
     
     public function parseEtat($addon) {
@@ -181,7 +181,10 @@ class SyncFromValidationOrder extends SalesforceEntity {
         $this
                 ->setOrderId($orderId)
                 ->setDate($order->date_upd)
-                ->setChoixPaiement($this->parseChoixPaiement($order->getCurrentOrderState()))
+                ->setChoixPaiement($this->parseChoixPaiement($order->getCurrentOrderState(),
+                                                             $order->module,
+                                                             $order->payment
+                ))
                 ->setEtat($this->parseEtat($order->getCurrentOrderState()))
                 ->setCommentaire($order->getFirstMessage())
         ;
