@@ -29,49 +29,48 @@ ini_set('errors_reporting', E_ALL);
 class SalesforceSQL {
 
     public static function save(SalesforceEntity $entity) {
-        $sql = "INSERT INTO `" . _DB_PREFIX_ . "achats_clients_sync` "
-                . "(`id`, `montant`, `date`, `choixPaiement`, `etat`, `erreurPaybox`, `erreurPaypal`, "
-                . "`estAdhesion`, `recuFiscal`, `commentaire`, `URLInterface`, `adresseIP`, "
-                . "`intitule`, `panier`, `id_client_boutique`, `nom`, `prenom`, `courriel`, "
-                . "`telephone`, `adresse`, `adresseComplement`, `codePostal`, `ville`, `pays`, "
-                . "`newsletter`, `pasDePapier`, `syncEtat`) "
-                . "VALUES ("
-                . "'" . $entity->getOrderId() . "', "
-                . "'" . $entity->getMontant() . "', "
-                . "'" . $entity->getDate() . "', "
-                . "'" . $entity->getChoixPaiement() . "', "
-                . "'" . $entity->getEtat() . "', "
-                . "'" . $entity->getErreurPaybox() . "', "
-                . "'" . $entity->getErreurPaypal() . "', "
-                . "'" . $entity->getEstAdhesion() . "', "
-                . "'" . $entity->getRecuFiscal() . "', "
-                . "'" . addslashes($entity->getCommentaire()) . "', "
-                . "'" . $entity->getURLInterface() . "', "
-                . "'" . $entity->getAdresseIP() . "', "
-                . "'" . $entity->getIntitule() . "', "
-                . "'" . $entity->getPanier() . "', "
-                . "'" . $entity->getIdClientBoutique() . "', "
-                . "'" . addslashes($entity->getNom()) . "', "
-                . "'" . addslashes($entity->getPrenom()) . "', "
-                . "'" . $entity->getCourriel() . "', "
-                . "'" . $entity->getTelephone() . "', "
-                . "'" . addslashes($entity->getAdresse()) . "', "
-                . "'" . addslashes($entity->getAdresseComplement()) . "', "
-                . "'" . $entity->getCodePostal() . "', "
-                . "'" . addslashes($entity->getVille()) . "', "
-                . "'" . addslashes($entity->getPays()) . "', "
-                . "'" . $entity->getNewsletter() . "', "
-                . "'" . $entity->getPasDePapier() . "', "
-                . "'" . $entity->getSyncEtat() . "'"
-                . ");";
+      $exist = Db::getInstance()->getRow('SELECT 1 FROM `'._DB_PREFIX_.'achats_clients_sync`'
+                                         . ' WHERE `id` = ' . "'" . $entity->getOrderId() . "'");
+     
+      $data = array(
+        'montant' => $entity->getMontant(),
+        'date' => $entity->getDate(),
+        'choixPaiement' => $entity->getChoixPaiement(),
+        'etat' => $entity->getEtat(),
+        'erreurPaybox' => $entity->getErreurPaybox(),
+        'erreurPaypal' => $entity->getErreurPaypal(),
+        'estAdhesion' => $entity->getEstAdhesion(),
+        'recuFiscal' => $entity->getRecuFiscal(),
+        'commentaire' => addslashes($entity->getCommentaire()),
+        'URLInterface' => $entity->getURLInterface(),
+        'adresseIP' => $entity->getAdresseIP(),
+        'intitule' => $entity->getIntitule(),
+        'panier' => Db::getInstance()->escape($entity->getPanier()),
+        'id_client_boutique' => $entity->getIdClientBoutique(),
+        'nom' => addslashes($entity->getNom()),
+        'prenom' => addslashes($entity->getPrenom()),
+        'courriel' => $entity->getCourriel(),
+        'telephone' => $entity->getTelephone(),
+        'adresse' => addslashes($entity->getAdresse()),
+        'adresseComplement' => addslashes($entity->getAdresseComplement()),
+        'codePostal' => $entity->getCodePostal(),
+        'ville' => addslashes($entity->getVille()),
+        'pays' => addslashes($entity->getPays()),
+        'newsletter' => $entity->getNewsletter(),
+        'pasDePapier' => $entity->getPasDePapier(),
+        'syncEtat' => $entity->getSyncEtat(),
+      );
 
-        if (!Db::getInstance()->Execute($sql)) {
-            return false;
-        }
+      if(! $exist) {
+        $data = ['id' => $entity->getOrderId()] + $data;
+        return Db::getInstance()->insert('achats_clients_sync', $data);
+      }
+      else {
+        return Db::getInstance()->update('achats_clients_sync', $data, '`id` = ' .  $entity->getOrderId());
+      }
     }
-
-    public static function getAll() {
-        return (Db::getInstance()->ExecuteS("SELECT * FROM `" . _DB_PREFIX_ . "achats_clients_sync`"));
-    }
-
+  
+  public static function getAll() {
+    return (Db::getInstance()->ExecuteS("SELECT * FROM `" . _DB_PREFIX_ . "achats_clients_sync`"));
+  }
 }
