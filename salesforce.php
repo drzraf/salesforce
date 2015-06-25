@@ -26,7 +26,6 @@
 if (!defined('_PS_VERSION_'))
     exit;
 
-require_once('classes/SalesforceInstall.php');
 require_once('classes/SalesforceSQL.php');
 require_once('classes/SyncFromValidationOrder.php');
 
@@ -57,7 +56,15 @@ class Salesforce extends Module {
             return false;
         }
 
-        SalesforceInstall::install();
+        $sqlFile = _PS_MODULE_DIR_ . 'sql/install.sql';
+        if(!file_exists($sqlFile) || !is_readable($sqlFile)) return false;
+        $sqlContent = str_replace(array('PREFIX_', 'ENGINE_TYPE'),
+                                  array(_DB_PREFIX_, _MYSQL_ENGINE_),
+                                  file_get_contents($sqlFile));
+        $sqlContent = preg_split("/;\s*[\r\n]+/", $sqlContent);
+        if (!Db::getInstance()->Execute($sqlContent)) {
+            return false;
+        }
 
         return true;
     }
