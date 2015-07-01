@@ -51,6 +51,11 @@ class SalesforceEntity {
     public $pays;
     public $newsletter;
     public $pasDePapier;
+    public $totalAchat;
+    public $totalDon;
+    public $totalHTAchatTVA_0;
+    public $totalHTAchatTVA_5_5;
+    public $totalHTAchatTVA_20;
     public $syncDate;
     public $syncEtat;
     public $syncErreur;
