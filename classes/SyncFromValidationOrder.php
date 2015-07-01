@@ -28,35 +28,7 @@ require_once('SalesforceSQL.php');
 
 class SyncFromValidationOrder extends SalesforceEntity {
 
-    public $context;
-
-    public function setContext($context) {
-        $this->context = $context;
-
-        return ($this);
-    }
-
-    public function getContext() {
-        return ($this->context);
-    }
-
-    public function parseProduct($products) {
-        $product_list = "";
-        $product_size = count($products);
-        if ($product_size > 0) {
-            for ($i = 0; $i < $product_size; $i++) {
-                $product_list .= $products[$i]['name'] . ";";
-            }
-        }
-
-        return ($product_list);
-    }
-
-    // $payment_method = 4th argument passed to validateOrder() by payment modules
-    public function parseChoixPaiement($addon, $module = NULL, $payment_method = NULL ) {
-        $payment = 'PR';
-        if (is_object($addon)) {
-            $paymentAddons = Array(
+		const paymentAddons = Array(
                 'paybox' => 'CB',
                 'worldpay' => 'CB',
                 'sagepay' => 'CB',
@@ -66,19 +38,8 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 'cheque' => 'CH',
                 'bankwire' => 'VI'
             );
-            if (isset($paymentAddons[$addon->module_name])) {
-                return $paymentAddons[$addon->module_name];
-            }
-        }
-        if ($payment_method == 'CB avec Paybox') return 'CB';
-        // may come other tests over $module AND/OR $payment_method
-        return 'PR'; // default
-    }
-    
-    public function parseEtat($addon) {
-        $etat = 'erreur';
-        if (is_object($addon)) {
-            $paymentAddons = Array(
+
+		const paymentStates = Array(
                 'En attente du paiement par chèque' => 'attente',
                 'En attente de paiement par chèque' => 'attente',
                 'Paiement accepté' => 'valide',
@@ -101,14 +62,34 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 'En attente de paiement à la livraison' => 'attente',
                 'Autorisation accepté par PayPal' => 'valide',
             );
-            if (isset($paymentAddons[$addon->name[1]])) {
-                $etat = $paymentAddons[$addon->name[1]];
-            } else {
-                $etat = 'erreur';
+
+    public static function parseProduct($products) {
+        return implode(';',
+											 array_map(function($e) { return $e['name']; },
+																 $products));
+    }
+
+    // $payment_method = 4th argument passed to validateOrder() by payment modules
+    public static function parseChoixPaiement($addon, $module = NULL, $payment_method = NULL ) {
+        if (is_object($addon)) {
+            if (array_key_exists($addon->module_name, self::paymentAddons)) {
+                return self::paymentAddons[$addon->module_name];
             }
         }
-
-        return ($etat);
+        if ($payment_method == 'CB avec Paybox') return 'CB';
+        // may come other tests over $module AND/OR $payment_method
+        return 'PR'; // default
+    }
+    
+    public static function parseEtat($addon) {
+        if (is_object($addon)) {
+            if (array_key_exists($addon->name[1], self::paymentStates)) {
+                return self::paymentStates[$addon->name[1]];
+            } else {
+                return 'erreur';
+            }
+        }
+        return 'erreur';;
     }
 
     public function setNewsletter($newsletter) {
@@ -135,61 +116,62 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return ($res);
     }
 
-    public function setCustomerAddressFromContext($customer) {
-        $address = new Address(Address::getFirstCustomerAddressId($customer->id));
-        $this
-                ->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
-                ->setAdresse($address->address1)
-                ->setAdresseComplement($address->address2)
-                ->setCodePostal($address->postcode)
-                ->setVille($address->city)
-                ->setPays($address->country)
-        ;
+		public function setTotaux($cart, $products, $context) {
+        /* cf:
+           SELECT GROUP_CONCAT(id_product), t.name, p.id_tax_rules_group from ps1_product_shop p LEFT JOIN ps1_tax_rules_group t ON t.id_tax_rules_group = p.id_tax_rules_group
 
-        return ($this);
-    }
+           Investigate the alternative (overhead but maybe more exact):
+           new Product(id_product)->getTaxesRate() ?
 
-    public function setCustomerFromContext() {
-        $customer = $this->context->customer;
-        $this
-                ->setIdClientBoutique($customer->id)
-                ->setNom($customer->lastname)
-                ->setPrenom($customer->firstname)
-                ->setCourriel($customer->email)
-                ->setNewsletter($customer->newsletter)
-                ->setCustomerAddressFromContext($customer)
-        ;
 
-        return ($this);
-    }
+					 // howto re-run hook for Cart ID:
+					 include('config/config.inc.php');
+					 Order::getOrdersWithInformations();
+					 $x=new Order(Order::getOrderByCartId(45));
+					 $x->context = Context::getContext();
+					 $x->context->cart = new Cart(45);
+					 $x->setCurrentState(1);
+        */
 
-    public function setCartFromContext() {
-        $cart = new Cart($this->context->cart->id);
+				$this->totalAchat
+						= $this->totalDon
+						= $this->totalHTAchatTVA_0
+						= $this->totalHTAchatTVA_5_5
+						= $this->totalHTAchatTVA_20
+						= 0;
 
-        $this
-                ->setPanier($this->parseProduct($cart->getProducts()))
-                ->setMontant($cart->getOrderTotal())
-        ;
+        foreach($products as $product) {
+            $id_product = $product['id_product'];
+            $rateInfo = Product::getTaxesInformations(array('id_product' => $id_product),
+                                                      $context);
+            $tags = Tag::getProductTags($product['id_product']);
+						$tags = $tags[$context->cart->id_lang];
+            $is_don = ($tags && array_search("don", $tags) !== FALSE);
+						
+            $rate = $rateInfo['rate'];
+            $price = $product['price'];
+            if($product['pwyw_price']) {
+                // TODO: si price exist, pwyw_price est toujours un prix libre
+                // (mais un prix a pu être suggéré).
+								// Cela ne concerne que des produits en TVA 0
+                $rate = 0;
+                $price = $product['pwyw_price'];
+            }
 
-        return ($this);
-    }
+						if($is_don) {
+								$this->totalDon += $price;
+								continue;
+						}
 
-    public function setOrderFromContext() {
-        $orderId = Order::getOrderByCartId($this->context->cart->id);
-        $order = new Order($orderId);
+						// totalAchat: cumul des achats TVA comprise indépendemment de leur taux de TVA
+						$this->totalAchat += ($rate == 0) ? $price : $product['price_wt'];
+						if($rate == 0) $this->totalHTAchatTVA_0         += $price;
+						elseif($rate == 5.5) $this->totalHTAchatTVA_5_5 += $price;
+						elseif($rate == 20) $this->totalHTAchatTVA_20   += $price;
+						else error_log("error rate = $rate " . __FILE__ . ":" . __LINE__);
 
-        $this
-                ->setOrderId($orderId)
-                ->setDate($order->date_upd)
-                ->setChoixPaiement($this->parseChoixPaiement($order->getCurrentOrderState(),
-                                                             $order->module,
-                                                             $order->payment
-                ))
-                ->setEtat($this->parseEtat($order->getCurrentOrderState()))
-                ->setCommentaire($order->getFirstMessage())
-        ;
-
-        return ($this);
+        }
+				return $this;
     }
 
     public function setErrorsFromContext($options) {
@@ -202,13 +184,8 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return ($this);
     }
 
-    public function setExtras($options) {
-        $shop = new ShopURL($this->context->cart->id_shop);
+    public function setExtras($shop, $options) {
         $this
-                ->setURLInterface($shop->getURL())
-                ->setAdresseIP(preg_replace("#\\000#", '', $_SERVER['REMOTE_ADDR']))
-                ->setIntitule('Achats')
-                ->setErrorsFromContext($options)
         ;
 
         return ($this);
@@ -216,12 +193,52 @@ class SyncFromValidationOrder extends SalesforceEntity {
 
     public static function initFromContext($context, $options = NULL) {
         $sync = new SyncFromValidationOrder();
+
+				$customer = $context->customer;
+				$address = new Address(Address::getFirstCustomerAddressId($context->customer->id));
+
+				$shop = new ShopURL($context->cart->id_shop);
+        $cart = new Cart($context->cart->id);
+				$order = new Order(Order::getOrderByCartId($context->cart->id));
+        $products = $cart->getProducts();
+
         $sync
-                ->setContext($context)
-                ->setCustomerFromContext()
-                ->setCartFromContext()
-                ->setOrderFromContext()
-                ->setExtras($options)
+                // setCustomerFromContext
+                ->setIdClientBoutique($customer->id)
+                ->setNom($customer->lastname)
+                ->setPrenom($customer->firstname)
+                ->setCourriel($customer->email)
+                ->setNewsletter($customer->newsletter)
+
+								// setCustomerAddressFromContext
+								->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
+                ->setAdresse($address->address1)
+                ->setAdresseComplement($address->address2)
+                ->setCodePostal($address->postcode)
+                ->setVille($address->city)
+                ->setPays($address->country)
+
+								// setCartFromContext
+                ->setTotaux($cart, $products, $context)
+                ->setPanier(self::parseProduct($products))
+                ->setMontant($cart->getOrderTotal())
+
+								// setOrderFromContext
+								->setOrderId($order->id)
+                ->setDate($order->date_upd)
+                ->setChoixPaiement(self::parseChoixPaiement($order->getCurrentOrderState(),
+																														$order->module,
+																														$order->payment))
+                ->setEtat(self::parseEtat($order->getCurrentOrderState()))
+                ->setCommentaire($order->getFirstMessage())
+
+								// setExtras($shop, $options)
+								->setURLInterface($shop->getURL())
+                ->setAdresseIP($_SERVER['REMOTE_ADDR'])
+                ->setIntitule('Achats')
+                ->setErrorsFromContext($options)
+
+								// setSyncEtat
                 ->setSyncEtat("tosync")
         ;
         SalesforceSQL::save($sync);
