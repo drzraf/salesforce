@@ -195,11 +195,18 @@ class SyncFromValidationOrder extends SalesforceEntity {
         $sync = new SyncFromValidationOrder();
 
 				$customer = $context->customer;
-				$address = new Address(Address::getFirstCustomerAddressId($context->customer->id));
 
 				$shop = new ShopURL($context->cart->id_shop);
         $cart = new Cart($context->cart->id);
+
+        // set customer from the ID registered in the cart
+        // useful for hooks run from command line on existing carts
+        if(is_null($customer->id) && $context->cart->id_customer) {
+          $customer = new Customer($context->cart->id_customer);
+        }
+
 				$order = new Order(Order::getOrderByCartId($context->cart->id));
+        $address = new Address(Address::getFirstCustomerAddressId($customer->id));
         $products = $cart->getProducts();
 
         $sync
