@@ -58,7 +58,8 @@ class SalesforceSQL {
         'pays' => addslashes($entity->getPays()),
         'newsletter' => $entity->getNewsletter(),
         'pasDePapier' => $entity->getPasDePapier(),
-        'syncEtat' => $entity->getSyncEtat(),
+        'SFsyncEtat' => $entity->SFsyncEtat,
+        'MCsyncEtat' => $entity->MCsyncEtat
       );
 
       if(! $exist) {

@@ -51,9 +51,13 @@ class SalesforceEntity {
     public $pays;
     public $newsletter;
     public $pasDePapier;
-    public $syncDate;
-    public $syncEtat;
-    public $syncErreur;
+    // below: no getter/setter
+    public $SFsyncDate;
+    public $SFsyncEtat;
+    public $SFsyncErreur;
+    public $MCsyncDate;
+    public $MCsyncEtat;
+    public $MCsyncErreur;
 
     public function setOrderId($orderId) {
         $this->orderId = $orderId;
@@ -211,24 +215,6 @@ class SalesforceEntity {
         return ($this);
     }
 
-    public function setSyncDate($syncDate) {
-        $this->syncDate = $syncDate;
-
-        return ($this);
-    }
-
-    public function setSyncEtat($syncEtat) {
-        $this->syncEtat = $syncEtat;
-
-        return ($this);
-    }
-
-    public function setSyncErreur($syncErreur) {
-        $this->syncErreur = $syncErreur;
-
-        return ($this);
-    }
-
     public function getOrderId() {
         return ($this->orderId);
     }
@@ -332,17 +318,4 @@ class SalesforceEntity {
     public function getPasDePapier() {
         return ($this->pasDePapier);
     }
-
-    public function getSyncDate() {
-        return ($this->syncDate);
-    }
-
-    public function getSyncEtat() {
-        return ($this->syncEtat);
-    }
-
-    public function getSyncErreur() {
-        return ($this->syncErreur);
-    }
-
 }
