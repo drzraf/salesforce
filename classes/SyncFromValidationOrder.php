@@ -243,11 +243,11 @@ class SyncFromValidationOrder extends SalesforceEntity {
 								->setURLInterface($shop->getURL())
                 ->setAdresseIP($_SERVER['REMOTE_ADDR'])
                 ->setIntitule('Achats')
-                ->setErrorsFromContext($options)
+                ->setErrorsFromContext($options);
 
-								// setSyncEtat
-                ->setSyncEtat("tosync")
-        ;
+        $sync->SFsyncEtat = "tosync";
+        $sync->MCsyncEtat = "tosync";
+
         SalesforceSQL::save($sync);
     }
 

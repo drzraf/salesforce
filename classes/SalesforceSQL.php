@@ -63,7 +63,8 @@ class SalesforceSQL {
         'total_ht_achat_no_tva' => $entity->totalHTAchatTVA_0,
         'total_ht_achat_tva_5_5' => $entity->totalHTAchatTVA_5_5,
         'total_ht_achat_tva_20' => $entity->totalHTAchatTVA_20,
-        'syncEtat' => $entity->getSyncEtat(),
+        'SFsyncEtat' => $entity->SFsyncEtat,
+        'MCsyncEtat' => $entity->MCsyncEtat
       );
 
       if(! $exist) {

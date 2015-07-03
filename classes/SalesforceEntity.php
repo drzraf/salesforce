@@ -51,14 +51,18 @@ class SalesforceEntity {
     public $pays;
     public $newsletter;
     public $pasDePapier;
+    // below: no getter/setter
     public $totalAchat;
     public $totalDon;
     public $totalHTAchatTVA_0;
     public $totalHTAchatTVA_5_5;
     public $totalHTAchatTVA_20;
-    public $syncDate;
-    public $syncEtat;
-    public $syncErreur;
+    public $SFsyncDate;
+    public $SFsyncEtat;
+    public $SFsyncErreur;
+    public $MCsyncDate;
+    public $MCsyncEtat;
+    public $MCsyncErreur;
 
     public function setOrderId($orderId) {
         $this->orderId = $orderId;
@@ -216,24 +220,6 @@ class SalesforceEntity {
         return ($this);
     }
 
-    public function setSyncDate($syncDate) {
-        $this->syncDate = $syncDate;
-
-        return ($this);
-    }
-
-    public function setSyncEtat($syncEtat) {
-        $this->syncEtat = $syncEtat;
-
-        return ($this);
-    }
-
-    public function setSyncErreur($syncErreur) {
-        $this->syncErreur = $syncErreur;
-
-        return ($this);
-    }
-
     public function getOrderId() {
         return ($this->orderId);
     }
@@ -337,17 +323,4 @@ class SalesforceEntity {
     public function getPasDePapier() {
         return ($this->pasDePapier);
     }
-
-    public function getSyncDate() {
-        return ($this->syncDate);
-    }
-
-    public function getSyncEtat() {
-        return ($this->syncEtat);
-    }
-
-    public function getSyncErreur() {
-        return ($this->syncErreur);
-    }
-
 }
