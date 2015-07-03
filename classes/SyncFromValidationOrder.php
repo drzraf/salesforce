@@ -207,13 +207,6 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return ($this);
     }
 
-    public function setExtras($shop, $options) {
-        $this
-        ;
-
-        return ($this);
-    }
-
     public static function initFromContext($context, $options = NULL) {
         $sync = new SyncFromValidationOrder();
 
