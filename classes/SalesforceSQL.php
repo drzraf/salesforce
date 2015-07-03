@@ -46,7 +46,7 @@ class SalesforceSQL {
         'adresseIP' => $entity->getAdresseIP(),
         'intitule' => $entity->getIntitule(),
         'panier' => Db::getInstance()->escape($entity->getPanier()),
-        'id_client_boutique' => $entity->getIdClientBoutique(),
+        'id_client_boutique' => $entity->idClientBoutique,
         'nom' => addslashes($entity->getNom()),
         'prenom' => addslashes($entity->getPrenom()),
         'courriel' => $entity->getCourriel(),
