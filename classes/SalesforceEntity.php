@@ -203,12 +203,6 @@ class SalesforceEntity {
         return ($this);
     }
 
-    public function setNewsletter($newsletter) {
-        $this->newsletter = $newsletter;
-
-        return ($this);
-    }
-
     public function setPasDePapier($pasDePapier) {
         $this->pasDePapier = $pasDePapier;
 

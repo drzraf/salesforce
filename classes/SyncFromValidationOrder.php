@@ -92,14 +92,37 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return 'erreur';;
     }
 
-    public function setNewsletter($newsletter) {
-        if ($newsletter == 0 || empty($newsletter)) {
+    public function setNewsletter($customer_data, $first_order = TRUE) {
+        // see https://github.com/PrestaShop/PrestaShop/pull/3350
+        $x1 = time() - strtotime($customer_data->newsletter_date_add);
+        $x2 = time() - strtotime($customer_data->date_upd);
+        // modification récente du profile: signifie soit que la newsletter
+        // a été cochée il y a moins de 3 jours, soit tout autre modification du
+        // profile de moins de 3 jours
+        $recent_mod = ($x1 <= 3600 * 24 * 3 || $x2 <= 3600 * 24 * 3);
+
+        if (!$customer_data->newsletter) {
             $res = 'non';
         } else {
             $res = 'oui';
         }
 
-        parent::setNewsletter($res);
+        $this->newsletter = $res;
+
+        // premier achat et newsletter cochées: synchro
+        if($first_order && $this->newsletter) {
+            $this->MCsyncEtat = "tosync";
+        }
+
+        // acheteur déjà connu ayant modifié son profile il y a moins
+        // de 3 jours et ayant "newsletter" coché
+        elseif(!$first_order && $this->newsletter && $recent_mod) {
+            $this->MCsyncEtat = "tosync";
+        }
+
+        else {
+            $this->MCsyncEtat = "synchronised"; // "torefresh" ?
+        }
 
         return ($this);
     }
@@ -204,8 +227,12 @@ class SyncFromValidationOrder extends SalesforceEntity {
         if(is_null($customer->id) && $context->cart->id_customer) {
           $customer = new Customer($context->cart->id_customer);
         }
+        $first_customer_order = (int)Db::getInstance()->getValue('SELECT COUNT(1) FROM `'
+                                                            . _DB_PREFIX_ . 'achats_clients_sync`'
+                                                            . ' WHERE id_client_boutique = '
+                                                            . (int)$customer->id) == 0;
 
-				$order = new Order(Order::getOrderByCartId($context->cart->id));
+        $order = new Order(Order::getOrderByCartId($context->cart->id));
         $address = new Address(Address::getFirstCustomerAddressId($customer->id));
         $products = $cart->getProducts();
 
@@ -215,7 +242,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 ->setNom($customer->lastname)
                 ->setPrenom($customer->firstname)
                 ->setCourriel($customer->email)
-                ->setNewsletter($customer->newsletter)
+                ->setNewsletter($customer, $first_customer_order)
 
 								// setCustomerAddressFromContext
 								->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
@@ -246,7 +273,6 @@ class SyncFromValidationOrder extends SalesforceEntity {
                 ->setErrorsFromContext($options);
 
         $sync->SFsyncEtat = "tosync";
-        $sync->MCsyncEtat = "tosync";
 
         SalesforceSQL::save($sync);
     }
