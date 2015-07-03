@@ -229,9 +229,9 @@ class SyncFromValidationOrder extends SalesforceEntity {
         $address = new Address(Address::getFirstCustomerAddressId($customer->id));
         $products = $cart->getProducts();
 
+        $sync->idClientBoutique = $customer->id;
         $sync
                 // setCustomerFromContext
-                ->setIdClientBoutique($customer->id)
                 ->setNom($customer->lastname)
                 ->setPrenom($customer->firstname)
                 ->setCourriel($customer->email)

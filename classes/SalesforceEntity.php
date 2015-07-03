@@ -148,12 +148,6 @@ class SalesforceEntity {
         return ($this);
     }
 
-    public function setIdClientBoutique($idClientBoutique) {
-        $this->idClientBoutique = $idClientBoutique;
-
-        return ($this);
-    }
-
     public function setNom($nom) {
         $this->nom = $nom;
 
@@ -268,10 +262,6 @@ class SalesforceEntity {
 
     public function getPanier() {
         return ($this->panier);
-    }
-
-    public function getIdClientBoutique() {
-        return ($this->idClientBoutique);
     }
 
     public function getNom() {
