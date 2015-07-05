@@ -31,7 +31,7 @@ $mcApi = new \L214\MailChimp(['apiKey' => MAILCHIMP_API_KEY,
 $query = new DbQuery();
 $query->select('*')
       ->from('achats_clients_sync')
-      ->where('MCsyncEtat = \'tosync\' AND id_client_boutique = 4');
+      ->where('MCsyncEtat = "tosync" AND id_client_boutique = 4');
 
 // whereas each user may have done multiple orders waiting a sync
 // whereas MailChimp is keyed by email
@@ -44,6 +44,8 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   $address = new Address(Address::getFirstCustomerAddressId($customer->id));
 
   $email = $customer->email; // normally: same as $order->courriel
+  if(isset($emails_synced[$email])) continue;
+
   $newsletter = $customer->newsletter; // normally: same as $order->newsletter
   $cp = $address->postcode;
 
@@ -55,5 +57,17 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   // $order->set(...)
   $order->save(); */
 
+  $emails_synced[$email] = 1;
   die;
+  /*
+    $mcApi->subscribeNewsletter($email, $firstName, $lastName, $postalCode, $countryCode,
+                              $language, $source, $emailType = 'html', $doubleOptin = TRUE,
+                              $updateExisting = TRUE); */
+  
 }
+
+Db::getInstance()->update('achats_clients_sync',
+                          'MCsyncEtat = "synchronized"',
+                          'MCsyncEtat = "tosync"'
+                          . ' AND courriel IN ("' . implode('","', $emails_synced) . '")'
+                          . ' AND id_client_boutique = 4');
