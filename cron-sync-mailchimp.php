@@ -42,16 +42,18 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   $order = (object)($o);
   $customer = new Customer($order->id_client_boutique);
   $address = new Address(Address::getFirstCustomerAddressId($customer->id));
-
+  $country = new Country($address->id_country);
+  
   $email = $customer->email; // normally: same as $order->courriel
   if(isset($emails_synced[$email])) continue;
 
   $newsletter = $customer->newsletter; // normally: same as $order->newsletter
   $cp = $address->postcode;
+  $cc = $country->iso_code;
 
   $userInfo = $mcApi->getUserByEmail($email);
   // TODO:
-  var_dump($userInfo);
+  var_dump($customer); //, $userInfo);
 
   /* useless until SalesforceEntity implements an ObjectModel
   // $order->set(...)
@@ -59,11 +61,8 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
 
   $emails_synced[$email] = 1;
   die;
-  /*
-    $mcApi->subscribeNewsletter($email, $firstName, $lastName, $postalCode, $countryCode,
-                              $language, $source, $emailType = 'html', $doubleOptin = TRUE,
-                              $updateExisting = TRUE); */
-  
+  $mcApi->subscribeNewsletter($email, $customer->firstname, $customer->$lastname,
+                              $cp, $cc, $language, 'PrestaShop', 'html', FALSE, TRUE);
 }
 
 Db::getInstance()->update('achats_clients_sync',
