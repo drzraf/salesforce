@@ -58,11 +58,12 @@ class SalesforceSQL {
         'pays' => addslashes($entity->getPays()),
         'newsletter' => $entity->getNewsletter(),
         'pasDePapier' => $entity->getPasDePapier(),
-        'total_achat' => $entity->totalAchat,
+        'total_vente_ttc_hp' => $entity->totalVenteTTC_HP,
         'total_don' => $entity->totalDon,
-        'total_ht_achat_no_tva' => $entity->totalHTAchatTVA_0,
-        'total_ht_achat_tva_5_5' => $entity->totalHTAchatTVA_5_5,
-        'total_ht_achat_tva_20' => $entity->totalHTAchatTVA_20,
+        'total_vente_ht_tva_0' => $entity->totalVenteHT_TVA_0,
+        'total_vente_ht_tva_5_5' => $entity->totalVenteHT_TVA_5_5,
+        'total_vente_ht_tva_20' => $entity->totalVenteHT_TVA_20,
+        'shipping_tax_excl' => $entity->shipping_tax_excl,
         'SFsyncEtat' => $entity->SFsyncEtat,
         'MCsyncEtat' => $entity->MCsyncEtat
       );

@@ -52,11 +52,12 @@ class SalesforceEntity {
     public $newsletter;
     public $pasDePapier;
     // below: no getter/setter
-    public $totalAchat;
+    public $totalVenteTTC_HP;
     public $totalDon;
-    public $totalHTAchatTVA_0;
-    public $totalHTAchatTVA_5_5;
-    public $totalHTAchatTVA_20;
+    public $totalVenteHT_TVA_0;
+    public $totalVenteHT_TVA_5_5;
+    public $totalVenteHT_TVA_20;
+    public $shipping_tax_excl;
     public $SFsyncDate;
     public $SFsyncEtat;
     public $SFsyncErreur;
