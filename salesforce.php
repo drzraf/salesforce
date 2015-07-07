@@ -26,7 +26,6 @@
 if (!defined('_PS_VERSION_'))
     exit;
 
-require_once('classes/SalesforceSQL.php');
 require_once('classes/SyncFromValidationOrder.php');
 
 class Salesforce extends Module {
@@ -75,7 +74,7 @@ class Salesforce extends Module {
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
-        $this->context->smarty->assign('entry', SalesforceSQL::getAll());
+        $this->context->smarty->assign('entry', SalesforceEntity::getAllRecords());
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
         return $output;

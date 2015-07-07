@@ -24,7 +24,6 @@
  */
 
 require_once('SalesforceEntity.php');
-require_once('SalesforceSQL.php');
 
 class SyncFromValidationOrder extends SalesforceEntity {
 
@@ -102,12 +101,12 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $recent_mod = ($x1 <= 3600 * 24 * 3 || $x2 <= 3600 * 24 * 3);
 
     if (!$customer_data->newsletter) {
-      $res = 'non';
+      $this->newsletter = FALSE;
     } else {
-      $res = 'oui';
+      $this->newsletter = TRUE;
     }
 
-    $this->newsletter = $res;
+
 
     // premier achat et newsletter cochées: synchro
     if($first_order && $this->newsletter) {
@@ -230,44 +229,41 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $address = new Address(Address::getFirstCustomerAddressId($customer->id));
     $products = $cart->getProducts();
 
-    $sync->idClientBoutique = $customer->id;
-    $sync
-      // setCustomerFromContext
-      ->setNom($customer->lastname)
-      ->setPrenom($customer->firstname)
-      ->setCourriel($customer->email)
-      ->setNewsletter($customer, $first_customer_order)
+    $sync->order_id = $order->id;
+    $sync->date = $order->date_upd;
 
-      // setCustomerAddressFromContext
-      ->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
-      ->setAdresse($address->address1)
-      ->setAdresseComplement($address->address2)
-      ->setCodePostal($address->postcode)
-      ->setVille($address->city)
-      ->setPays($address->country)
+    // customer
+    $sync->id_client_boutique = $customer->id;
+    $sync->nom = $customer->lastname;
+    $sync->prenom = $customer->firstname;
+    $sync->courriel = $customer->email;
+    $sync->setNewsletter($customer, $first_customer_order);
 
-      // setCartFromContext
-      ->setTotaux($cart, $products, $context)
-      ->setPanier(self::parseProduct($products))
-      ->setMontant($cart->getOrderTotal())
+    // customer address
+    $sync->telephone = ($address->phone ? : $address->phone_mobile);
+    $sync->adresse = $address->address1;
+    $sync->adresseComplement = $address->address2;
+    $sync->codePostal = $address->postcode;
+    $sync->ville = $address->city;
+    $sync->pays = $address->country;
 
-      // setOrderFromContext
-      ->setOrderId($order->id)
-      ->setDate($order->date_upd)
-      ->setChoixPaiement(self::parseChoixPaiement($order->getCurrentOrderState(),
-                                                  $order->module,
-                                                  $order->payment))
-      ->setEtat(self::parseEtat($order->getCurrentOrderState()))
-      ->setCommentaire($order->getFirstMessage())
+    // cart
+    $sync->montant = $cart->getOrderTotal();
+    $sync->panier = self::parseProduct($products);
+    $sync->setTotaux($cart, $products, $context);
+    $sync->choixPaiement = self::parseChoixPaiement($order->getCurrentOrderState(),
+                                                    $order->module,
+                                                    $order->payment);
+    $sync->etat = self::parseEtat($order->getCurrentOrderState());
 
-      // setExtras($shop, $options)
-      ->setURLInterface($shop->getURL())
-      ->setAdresseIP($_SERVER['REMOTE_ADDR'])
-      ->setIntitule('Achats')
-      ->setErrorsFromContext($options);
-
+    // misc
+    $sync->commentaire = $order->getFirstMessage();
+    $sync->URLInterface = $shop->getURL();
+    $sync->adresseIP = $_SERVER['REMOTE_ADDR'];
+    $sync->intitule = 'Achats';
+    $sync->setErrorsFromContext($options);
     $sync->SFsyncEtat = "tosync";
 
-    SalesforceSQL::save($sync);
+    $sync->save();
   }
 }
