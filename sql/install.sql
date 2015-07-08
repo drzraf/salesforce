@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
 `id` varchar(128) NOT NULL,
 `montant` decimal(17,2) unsigned NOT NULL, 
 `date` datetime NOT NULL,
-`choixPaiement` set('CB','PA','CH','VI','PR') NOT NULL COMMENT 'credit card, Paypal, Check, Transfer, PR?',
+`choixPaiement` set('CB','PA','CH','VI','PR') NOT NULL COMMENT 'Carte Bancaire, PAypal, CHèqye, VIrement, PRélévement',
 `etat` set('attente','valide','erreur','test') NOT NULL,
 `erreurPaybox` varchar(5) DEFAULT NULL,
 `erreurPaypal` varchar(5) DEFAULT NULL,

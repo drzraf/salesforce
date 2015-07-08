@@ -78,7 +78,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
     }
     if ($payment_method == 'CB avec Paybox') return 'CB';
     // may come other tests over $module AND/OR $payment_method
-    return 'PR'; // default
+    return 'PR'; // prélèvement
   }
     
   public static function parseEtat($addon) {
@@ -89,7 +89,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
         return 'erreur';
       }
     }
-    return 'erreur';;
+    return 'erreur';
   }
 
   public function setNewsletter($customer_data, $first_order = TRUE) {
