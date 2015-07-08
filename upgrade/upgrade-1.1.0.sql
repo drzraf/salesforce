@@ -9,3 +9,5 @@ ALTER TABLE `PREFIX_achats_clients_sync` ADD `MCsyncDate` datetime NOT NULL DEFA
 ALTER TABLE `PREFIX_achats_clients_sync` ADD `MCsyncEtat` set('synchronised','tosync','torefresh','error') COLLATE utf8_unicode_ci NOT NULL COMMENT 'Mettre toujours "tosync". Sera modifié au moment de la synchro avec MailChimp' AFTER `MCsyncDate`;
 
 ALTER TABLE `PREFIX_achats_clients_sync` ADD `MCsyncErreur` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'Laisser à NULL, sera rempli au moment de la synchro avec MailChimp' AFTER `MCsyncEtat`;
+
+ALTER TABLE `PREFIX_achats_clients_sync` CHANGE `id` `id_order` varchar(128) NOT NULL;

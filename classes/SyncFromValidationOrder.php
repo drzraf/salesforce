@@ -108,7 +108,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
 
 
 
-    // premier achat et newsletter cochées: synchro
+    // premier achat et case "newsletter" cochée: synchro
     if($first_order && $this->newsletter) {
       $this->MCsyncEtat = "tosync";
     }
@@ -208,8 +208,6 @@ class SyncFromValidationOrder extends SalesforceEntity {
   }
 
   public static function initFromContext($context, $options = NULL) {
-    $sync = new SyncFromValidationOrder();
-
     $customer = $context->customer;
 
     $shop = new ShopURL($context->cart->id_shop);
@@ -229,7 +227,8 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $address = new Address(Address::getFirstCustomerAddressId($customer->id));
     $products = $cart->getProducts();
 
-    $sync->order_id = $order->id;
+    $sync = new SyncFromValidationOrder($order->id);
+    $sync->id_order = $order->id;
     $sync->date = $order->date_upd;
 
     // customer

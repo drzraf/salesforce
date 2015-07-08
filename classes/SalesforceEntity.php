@@ -7,6 +7,9 @@
 
 class SalesforceEntity extends ObjectModel {
 
+  public $force_id = TRUE;
+
+
   public $id_order;
   public $montant;
   public $date;
@@ -33,7 +36,6 @@ class SalesforceEntity extends ObjectModel {
   public $pays;
   public $newsletter;
   public $pasDePapier;
-  // below: no getter/setter
   public $SFsyncDate;
   public $SFsyncEtat;
   public $SFsyncErreur;
@@ -45,6 +47,9 @@ class SalesforceEntity extends ObjectModel {
     'table' => 'achats_clients_sync',
     'primary' => 'id_order',
     'fields' => array(
+      // added here because even on insert it's not auto-determined by Prestashop
+      // (attribute marked "primary" is by itself not part of updated columns)
+      'id_order' => ['type' => self::TYPE_STRING, 'required' => true],
       'montant' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
       'date' => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => true],
       'choixPaiement' => ['type' => self::TYPE_STRING, 'size' => 2, 'required' => true],
@@ -72,20 +77,15 @@ class SalesforceEntity extends ObjectModel {
       'newsletter' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
       'pasDePapier' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => false],
 
-      'SFsyncDate' => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => false],
+      'SFsyncDate' => ['type' => self::TYPE_DATE, 'required' => false],
       'SFsyncEtat' => ['type' => self::TYPE_STRING, 'size' => 16, 'required' => true],
       'SFsyncErreur' => ['type' => self::TYPE_STRING, 'required' => false],
 
-      'MCsyncDate' => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => false],
+      'MCsyncDate' => ['type' => self::TYPE_DATE, 'required' => false],
       'MCsyncEtat' => ['type' => self::TYPE_STRING, 'size' => 16, 'required' => true],
       'MCsyncErreur' => ['type' => self::TYPE_STRING, 'required' => false],
     )
   );
-
-
-  public function add($autodate = true, $null_values = true) {
-    return parent::add($autodate, $null_values);
-  }
 
 /*     
   $data = array(
