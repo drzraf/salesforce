@@ -147,7 +147,6 @@ class SyncFromValidationOrder extends SalesforceEntity {
        Investigate the alternative (overhead but maybe more exact):
        new Product(id_product)->getTaxesRate() ?
 
-
        // howto re-run hook for Cart ID:
        include('config/config.inc.php');
        Order::getOrdersWithInformations();
@@ -157,11 +156,11 @@ class SyncFromValidationOrder extends SalesforceEntity {
        $x->setCurrentState(1);
     */
 
-    $this->totalVenteTTC_HP
-      = $this->totalDon
-      = $this->totalVenteHT_TVA_0
-      = $this->totalVenteHT_TVA_5_5
-      = $this->totalVenteHT_TVA_20
+    $this->total_vente_ttc_hp
+      = $this->total_don
+      = $this->total_vente_ht_tva_0
+      = $this->total_vente_ht_tva_5_5
+      = $this->total_vente_ht_tva_20
       = $this->shipping_tax_excl
       = 0;
 
@@ -175,7 +174,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
 						
       $rate = $rateInfo['rate'];
       $price = $product['price'];
-      if($product['pwyw_price']) {
+      if(isset($product['pwyw_price']) && $product['pwyw_price']) {
         // TODO: si price exist, pwyw_price est toujours un prix libre
         // (mais un prix a pu être suggéré).
         // Cela ne concerne que des produits en TVA 0
@@ -184,19 +183,24 @@ class SyncFromValidationOrder extends SalesforceEntity {
       }
 
       if($is_don) {
-        $this->totalDon += $price;
+        $this->total_don += $price;
         continue; // le montant des dons ne s'ajoute point aux achats
       }
       else {
-        // totalVenteTTC_HP: cumul des achats TVA comprise indépendemment de leur taux de TVA
-        $this->totalVenteTTC_HP += ($rate == 0) ? $price : $product['price_wt'];
-        if($rate == 0) $this->totalVenteHT_TVA_0         += $price;
-        elseif($rate == 5.5) $this->totalVenteHT_TVA_5_5 += $price;
-        elseif($rate == 20) $this->totalVenteHT_TVA_20   += $price;
+        // total_vente_ttc_hp: cumul des achats TVA comprise indépendemment de leur taux de TVA
+        $this->total_vente_ttc_hp += ($rate == 0) ? $price : $product['price_wt'];
+        if($rate == 0) $this->total_vente_ht_tva_0         += $price;
+        elseif($rate == 5.5) $this->total_vente_ht_tva_5_5 += $price;
+        elseif($rate == 20) $this->total_vente_ht_tva_20   += $price;
       }
-
     }
-    $this->$shipping_tax_excl = $order->total_shipping_tax_excl;
+
+    /* at the time of the order, it was $order->total_shipping_tax_excl
+    // $this->shipping_tax_excl = $order->total_shipping_tax_excl;
+    but it may have changed since. The dynamically computed value is: */
+    $this->shipping_tax_excl = $cart->getOrderTotal(false, Cart::ONLY_SHIPPING);
+    // Note: tax affecting the carrier are available through $order->carrier_tax_rate
+
     return $this;
   }
 
@@ -241,6 +245,9 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $sync->prenom = $customer->firstname;
     $sync->courriel = $customer->email;
     $sync->setNewsletter($customer, $first_customer_order);
+    // $sync->estAdhesion = ;
+    // $sync->recuFiscal = ;
+    // $sync->pasDePapier = ; setPasDePapier(xxx),
 
     // customer address
     $sync->telephone = ($address->phone ? : $address->phone_mobile);
@@ -253,7 +260,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
     // cart
     $sync->montant = $cart->getOrderTotal();
     $sync->panier = self::parseProduct($products);
-    $sync->setTotaux($cart, $products, $context);
+    $sync->setTotaux($cart, $order, $products, $context);
     $sync->choixPaiement = self::parseChoixPaiement($order->getCurrentOrderState(),
                                                     $order->module,
                                                     $order->payment);

@@ -35,12 +35,14 @@ class SalesforceEntity extends ObjectModel {
   public $pays;
   public $newsletter;
   public $pasDePapier;
-  public $totalVenteTTC_HP;
-  public $totalDon;
-  public $totalVenteHT_TVA_0;
-  public $totalVenteHT_TVA_5_5;
-  public $totalVenteHT_TVA_20;
+
+  public $total_vente_ttc_hp;
+  public $total_don;
+  public $total_vente_ht_tva_0;
+  public $total_vente_ht_tva_5_5;
+  public $total_vente_ht_tva_20;
   public $shipping_tax_excl;
+
   public $SFsyncDate;
   public $SFsyncEtat;
   public $SFsyncErreur;
@@ -82,6 +84,13 @@ class SalesforceEntity extends ObjectModel {
       'newsletter' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
       'pasDePapier' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => false],
 
+      'total_vente_ttc_hp' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      'total_don' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      'total_vente_ht_tva_0' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      'total_vente_ht_tva_5_5' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      'total_vente_ht_tva_20' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      'shipping_tax_excl' => ['type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true],
+      
       'SFsyncDate' => ['type' => self::TYPE_DATE, 'required' => false],
       'SFsyncEtat' => ['type' => self::TYPE_STRING, 'size' => 16, 'required' => true],
       'SFsyncErreur' => ['type' => self::TYPE_STRING, 'required' => false],
@@ -92,45 +101,15 @@ class SalesforceEntity extends ObjectModel {
     )
   );
 
-/*     
-       $data = array(
-       'montant' => $entity->getMontant(),
-       'date' => $entity->getDate(),
-       'choixPaiement' => $entity->getChoixPaiement(),
-       'etat' => $entity->getEtat(),
-       'erreurPaybox' => $entity->getErreurPaybox(),
-       'erreurPaypal' => $entity->getErreurPaypal(),
-       'estAdhesion' => $entity->getEstAdhesion(),
-       'recuFiscal' => $entity->getRecuFiscal(),
-       'commentaire' => addslashes($entity->getCommentaire()),
-       'URLInterface' => $entity->getURLInterface(),
-       'adresseIP' => $entity->getAdresseIP(),
-       'intitule' => $entity->getIntitule(),
-       'panier' => Db::getInstance()->escape($entity->getPanier()),
-       'id_client_boutique' => $entity->idClientBoutique,
-       'nom' => addslashes($entity->getNom()),
-       'prenom' => addslashes($entity->getPrenom()),
-       'courriel' => $entity->getCourriel(),
-       'telephone' => $entity->getTelephone(),
-       'adresse' => addslashes($entity->getAdresse()),
-       'adresseComplement' => addslashes($entity->getAdresseComplement()),
-       'codePostal' => $entity->getCodePostal(),
-       'ville' => addslashes($entity->getVille()),
-       'pays' => addslashes($entity->getPays()),
-       'newsletter' => $entity->getNewsletter(),
-       'pasDePapier' => $entity->getPasDePapier(),
-       'SFsyncEtat' => $entity->SFsyncEtat,
-       'MCsyncEtat' => $entity->MCsyncEtat
-       );
+/*
+  if(! $exist) {
+  $data = ['id' => $entity->orderId] + $data;
+  return Db::getInstance()->insert('achats_clients_sync', $data);
+  }
 
-       if(! $exist) {
-       $data = ['id' => $entity->orderId] + $data;
-       return Db::getInstance()->insert('achats_clients_sync', $data);
-       }
-
-       else {
-       return Db::getInstance()->update('achats_clients_sync', $data, '`id` = ' .  $entity->getOrderId());
-       }
+  else {
+  return Db::getInstance()->update('achats_clients_sync', $data, '`id` = ' .  $entity->getOrderId());
+  }
 */
 
   public static function getAllRecords() {
