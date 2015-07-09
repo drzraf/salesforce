@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
-`id` varchar(128) NOT NULL,
+`id_order` varchar(128) NOT NULL,
 `montant` decimal(17,2) unsigned NOT NULL COMMENT "Ce qu'à payé le client",
 `date` datetime NOT NULL,
 `choixPaiement` set('CB','PA','CH','VI','PR') NOT NULL COMMENT 'Carte Bancaire, PAypal, CHèqye, VIrement, PRélévement',
@@ -9,11 +9,12 @@ CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
 `estAdhesion` set('oui','non') DEFAULT NULL,
 `recuFiscal` set('oui','non') DEFAULT NULL,
 `commentaire` text,
-`URLInterface` varchar(255) NOT NULL, 
+`URLInterface` varchar(255) NOT NULL,
 `adresseIP` varchar(255) DEFAULT NULL COMMENT "IP du client au moment de l’achat",
-`intitule` varchar(255) DEFAULT NULL, 
-`panier` text DEFAULT NULL, 
+`intitule` varchar(255) DEFAULT NULL,
+`panier` text DEFAULT NULL,
 `id_client_boutique` varchar(128) NOT NULL,
+
 `nom` varchar(255) NOT NULL,
 `prenom` varchar(255) NOT NULL,
 `courriel` varchar(255) NOT NULL,
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
 `pays` varchar(255) NOT NULL,
 `newsletter` set('oui','non') NOT NULL,
 `pasDePapier` set('oui','non') NOT NULL DEFAULT 'non',
+
 `total_vente_ttc_hp` decimal(20,6) NOT NULL DEFAULT '0' COMMENT 'sous-total relatif aux seuls ventes TTC et hors frais de port',
 `total_don` decimal(20,6) NOT NULL DEFAULT '0' COMMENT 'sous-total relatif aux seuls dons et hors frais de port',
 `total_vente_ht_tva_0` decimal(20,6) NOT NULL DEFAULT '0' COMMENT 'sous-total des produits non-soumis à TVA',
@@ -39,5 +41,6 @@ CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
 `MCsyncDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Laisser à NULL, sera rempli au moment de la synchro avec MailChimp',
 `MCsyncEtat` set('synchronised','tosync','nottosync','error') COLLATE utf8_unicode_ci NOT NULL COMMENT 'Mettre toujours "tosync". Sera modifié au moment de la synchro avec MailChimp',
 `MCsyncErreur` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'Laisser à NULL, sera rempli au moment de la synchro avec MailChimp',
+
 PRIMARY KEY (`id`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

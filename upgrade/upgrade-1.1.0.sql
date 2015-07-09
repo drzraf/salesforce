@@ -20,6 +20,8 @@ ALTER TABLE `PREFIX_achats_clients_sync` ADD `MCsyncEtat` set('synchronised','to
 
 ALTER TABLE `PREFIX_achats_clients_sync` ADD `MCsyncErreur` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'Laisser à NULL, sera rempli au moment de la synchro avec MailChimp' AFTER `MCsyncEtat`;
 
+ALTER TABLE `PREFIX_achats_clients_sync` CHANGE `id` `id_order` varchar(128) NOT NULL;
+
 ALTER TABLE `PREFIX_achats_clients_sync` CHANGE `total_achat` `total_vente_ttc_hp` decimal(20,6) NOT NULL DEFAULT '0' COMMENT 'sous-total relatif aux seuls ventes TTC';
 
 ALTER TABLE `PREFIX_achats_clients_sync` CHANGE `total_ht_achat_no_tva` `total_vente_ht_tva_0` decimal(20,6) NOT NULL DEFAULT '0' COMMENT 'sous-total des produits non-soumis à TVA';

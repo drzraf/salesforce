@@ -19,12 +19,14 @@
  * needs please refer to https://www.zakarialounes.fr for more information.
  *
  *  @author    ZL Development <me@zakarialounes.fr>
- *  @copyright 2012-2015 ZL Development
+ *  @copyright 2015 ZL Development
+ *  @author    Raphaël Droz <raphael.droz+floss@gmail.com>
+ *  @copyright 2015
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  @license   General Public Licence v3 or later
  */
 
 require_once('SalesforceEntity.php');
-require_once('SalesforceSQL.php');
 
 class SyncFromValidationOrder extends SalesforceEntity {
 
@@ -102,14 +104,13 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $recent_mod = ($x1 <= 3600 * 24 * 3 || $x2 <= 3600 * 24 * 3);
 
     if (!$customer_data->newsletter) {
-      $res = 'non';
+      $this->newsletter = FALSE;
     } else {
-      $res = 'oui';
+      $this->newsletter = TRUE;
     }
 
-    $this->newsletter = $res;
 
-    // premier achat et newsletter cochées: synchro
+    // premier achat et case "newsletter" cochée: synchro
     if($first_order && $this->newsletter) {
       $this->MCsyncEtat = "tosync";
     }
@@ -156,12 +157,12 @@ class SyncFromValidationOrder extends SalesforceEntity {
        $x->setCurrentState(1);
     */
 
-				$this->totalVenteTTC_HP
+    $this->totalVenteTTC_HP
       = $this->totalDon
-						= $this->totalVenteHT_TVA_0
-						= $this->totalVenteHT_TVA_5_5
-						= $this->totalVenteHT_TVA_20
-            = $this->shipping_tax_excl
+      = $this->totalVenteHT_TVA_0
+      = $this->totalVenteHT_TVA_5_5
+      = $this->totalVenteHT_TVA_20
+      = $this->shipping_tax_excl
       = 0;
 
     foreach($products as $product) {
@@ -187,15 +188,15 @@ class SyncFromValidationOrder extends SalesforceEntity {
         continue; // le montant des dons ne s'ajoute point aux achats
       }
       else {
-						// totalVenteTTC_HP: cumul des achats TVA comprise indépendemment de leur taux de TVA
-						$this->totalVenteTTC_HP += ($rate == 0) ? $price : $product['price_wt'];
-						if($rate == 0) $this->totalVenteHT_TVA_0         += $price;
-						elseif($rate == 5.5) $this->totalVenteHT_TVA_5_5 += $price;
-						elseif($rate == 20) $this->totalVenteHT_TVA_20   += $price;
+        // totalVenteTTC_HP: cumul des achats TVA comprise indépendemment de leur taux de TVA
+        $this->totalVenteTTC_HP += ($rate == 0) ? $price : $product['price_wt'];
+        if($rate == 0) $this->totalVenteHT_TVA_0         += $price;
+        elseif($rate == 5.5) $this->totalVenteHT_TVA_5_5 += $price;
+        elseif($rate == 20) $this->totalVenteHT_TVA_20   += $price;
       }
 
     }
-        $this->$shipping_tax_excl = $order->total_shipping_tax_excl;
+    $this->$shipping_tax_excl = $order->total_shipping_tax_excl;
     return $this;
   }
 
@@ -210,7 +211,6 @@ class SyncFromValidationOrder extends SalesforceEntity {
   }
 
   public static function initFromContext($context, $options = NULL) {
-    $sync = new SyncFromValidationOrder();
 
     $customer = $context->customer;
 
@@ -231,44 +231,43 @@ class SyncFromValidationOrder extends SalesforceEntity {
     $address = new Address(Address::getFirstCustomerAddressId($customer->id));
     $products = $cart->getProducts();
 
-    $sync->idClientBoutique = $customer->id;
-    $sync
-      // setCustomerFromContext
-      ->setNom($customer->lastname)
-      ->setPrenom($customer->firstname)
-      ->setCourriel($customer->email)
-      ->setNewsletter($customer, $first_customer_order)
+    $sync = new SyncFromValidationOrder($order->id);
+    $sync->id_order = $order->id;
+    $sync->date = $order->date_upd;
 
-      // setCustomerAddressFromContext
-      ->setTelephone(($address->phone ? $address->phone : $address->phone_mobile))
-      ->setAdresse($address->address1)
-      ->setAdresseComplement($address->address2)
-      ->setCodePostal($address->postcode)
-      ->setVille($address->city)
-      ->setPays($address->country)
+    // customer
+    $sync->id_client_boutique = $customer->id;
+    $sync->nom = $customer->lastname;
+    $sync->prenom = $customer->firstname;
+    $sync->courriel = $customer->email;
+    $sync->setNewsletter($customer, $first_customer_order);
 
-      // setCartFromContext
-                ->setTotaux($cart, $order, $products, $context)
-      ->setPanier(self::parseProduct($products))
-      ->setMontant($cart->getOrderTotal())
+    // customer address
+    $sync->telephone = ($address->phone ? : $address->phone_mobile);
+    $sync->adresse = $address->address1;
+    $sync->adresseComplement = $address->address2;
+    $sync->codePostal = $address->postcode;
+    $sync->ville = $address->city;
+    $sync->pays = $address->country;
 
-      // setOrderFromContext
-      ->setOrderId($order->id)
-      ->setDate($order->date_upd)
-      ->setChoixPaiement(self::parseChoixPaiement($order->getCurrentOrderState(),
-                                                  $order->module,
-                                                  $order->payment))
-      ->setEtat(self::parseEtat($order->getCurrentOrderState()))
-      ->setCommentaire($order->getFirstMessage())
+    // cart
+    $sync->montant = $cart->getOrderTotal();
+    $sync->panier = self::parseProduct($products);
+    $sync->setTotaux($cart, $products, $context);
+    $sync->choixPaiement = self::parseChoixPaiement($order->getCurrentOrderState(),
+                                                    $order->module,
+                                                    $order->payment);
+    $sync->etat = self::parseEtat($order->getCurrentOrderState());
 
-      // setExtras($shop, $options)
-      ->setURLInterface($shop->getURL())
-      ->setAdresseIP($_SERVER['REMOTE_ADDR'])
-      ->setIntitule('Achats')
-      ->setErrorsFromContext($options);
+    // misc
+    $sync->commentaire = $order->getFirstMessage();
+    $sync->URLInterface = $shop->getURL();
+    $sync->adresseIP = $_SERVER['REMOTE_ADDR'];
+    $sync->intitule = 'Achats';
+    $sync->setErrorsFromContext($options);
 
     $sync->SFsyncEtat = "tosync";
 
-    SalesforceSQL::save($sync);
+    $sync->save();
   }
 }
