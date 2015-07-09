@@ -139,7 +139,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
     return ($res);
   }
 
-  public function setTotaux($cart, $products, $context) {
+  public function setTotaux($cart, $order, $products, $context) {
     /* cf:
        SELECT GROUP_CONCAT(id_product), t.name, p.id_tax_rules_group from ps1_product_shop p LEFT JOIN ps1_tax_rules_group t ON t.id_tax_rules_group = p.id_tax_rules_group
 
@@ -156,11 +156,12 @@ class SyncFromValidationOrder extends SalesforceEntity {
        $x->setCurrentState(1);
     */
 
-    $this->totalAchat
+				$this->totalVenteTTC_HP
       = $this->totalDon
-      = $this->totalHTAchatTVA_0
-      = $this->totalHTAchatTVA_5_5
-      = $this->totalHTAchatTVA_20
+						= $this->totalVenteHT_TVA_0
+						= $this->totalVenteHT_TVA_5_5
+						= $this->totalVenteHT_TVA_20
+            = $this->shipping_tax_excl
       = 0;
 
     foreach($products as $product) {
@@ -186,15 +187,15 @@ class SyncFromValidationOrder extends SalesforceEntity {
         continue; // le montant des dons ne s'ajoute point aux achats
       }
       else {
-        // totalAchat: cumul des achats TVA comprise indépendemment de leur taux de TVA
-        $this->totalAchat += ($rate == 0) ? $price : $product['price_wt'];
-        if($rate == 0) $this->totalHTAchatTVA_0         += $price;
-        elseif($rate == 5.5) $this->totalHTAchatTVA_5_5 += $price;
-        elseif($rate == 20) $this->totalHTAchatTVA_20   += $price;
-        else error_log("error rate = $rate " . __FILE__ . ":" . __LINE__);
+						// totalVenteTTC_HP: cumul des achats TVA comprise indépendemment de leur taux de TVA
+						$this->totalVenteTTC_HP += ($rate == 0) ? $price : $product['price_wt'];
+						if($rate == 0) $this->totalVenteHT_TVA_0         += $price;
+						elseif($rate == 5.5) $this->totalVenteHT_TVA_5_5 += $price;
+						elseif($rate == 20) $this->totalVenteHT_TVA_20   += $price;
       }
 
     }
+        $this->$shipping_tax_excl = $order->total_shipping_tax_excl;
     return $this;
   }
 
@@ -247,7 +248,7 @@ class SyncFromValidationOrder extends SalesforceEntity {
       ->setPays($address->country)
 
       // setCartFromContext
-      ->setTotaux($cart, $products, $context)
+                ->setTotaux($cart, $order, $products, $context)
       ->setPanier(self::parseProduct($products))
       ->setMontant($cart->getOrderTotal())
 

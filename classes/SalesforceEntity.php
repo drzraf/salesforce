@@ -52,6 +52,12 @@ class SalesforceEntity {
     public $newsletter;
     public $pasDePapier;
     // below: no getter/setter
+    public $totalVenteTTC_HP;
+    public $totalDon;
+    public $totalVenteHT_TVA_0;
+    public $totalVenteHT_TVA_5_5;
+    public $totalVenteHT_TVA_20;
+    public $shipping_tax_excl;
     public $SFsyncDate;
     public $SFsyncEtat;
     public $SFsyncErreur;
@@ -197,6 +203,12 @@ class SalesforceEntity {
         return ($this);
     }
 
+    public function setNewsletter($newsletter) {
+        $this->newsletter = $newsletter;
+
+        return ($this);
+    }
+
     public function setPasDePapier($pasDePapier) {
         $this->pasDePapier = $pasDePapier;
 
@@ -258,6 +270,7 @@ class SalesforceEntity {
     public function getPanier() {
         return ($this->panier);
     }
+
 
     public function getNom() {
         return ($this->nom);

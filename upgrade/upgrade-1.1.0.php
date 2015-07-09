@@ -32,10 +32,15 @@ if (!defined('_PS_VERSION_'))
  */
 function upgrade_module_1_1_0($module)
 {
-	/**
-	 * Do everything you want right there,
-	 * You could add a column in one of your module's tables
-	 */
+  $sqlFile = __DIR__ . '/upgrade-1.1.0.sql';
+  if(!file_exists($sqlFile) || !is_readable($sqlFile)) return false;
+  $sqlContent = str_replace(array('PREFIX_', 'ENGINE_TYPE'),
+                            array(_DB_PREFIX_, _MYSQL_ENGINE_),
+                            file_get_contents($sqlFile));
+  $sqlContent = preg_split("/;\s*[\r\n]+/", $sqlContent);
+  if (!Db::getInstance()->Execute($sqlContent)) {
+    return false;
+  }
 
 	return $module;
 }
