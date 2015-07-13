@@ -42,5 +42,5 @@ CREATE TABLE IF NOT EXISTS `PREFIX_achats_clients_sync` (
 `MCsyncEtat` set('synchronised','tosync','nottosync','error') COLLATE utf8_unicode_ci NOT NULL COMMENT 'Mettre toujours "tosync". Sera modifié au moment de la synchro avec MailChimp',
 `MCsyncErreur` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'Laisser à NULL, sera rempli au moment de la synchro avec MailChimp',
 
-PRIMARY KEY (`id`)
+PRIMARY KEY (`id_order`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
