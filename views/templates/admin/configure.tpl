@@ -41,7 +41,7 @@
         <thead>
             <tr>
                 <th colspan="2">Actions</th>
-                <th>id</th>
+                <th>id_order</th>
                 <th>montant</th>
                 <th>date</th>
                 <th>choixPaiement</th>
@@ -67,9 +67,18 @@
                 <th>pays</th>
                 <th>newsletter</th>
                 <th>pasDePapier</th>
-                <th>syncDate</th>
-                <th>SyncEtat</th>
-                <th>SyncErreur</th>
+		<th>Dons: total_don</th>
+		<th>Ventes TTC (hors ports): total_vente_ttc_hp</th>
+		<th>Ventes HT d'articles en TVA 0%: total_vente_ht_tva_0</th>
+		<th>Ventes HT d'articles en TVA 5.5%: total_vente_ht_tva_5_5</th>
+		<th>Ventes HT d'articles en TVA 20%: total_vente_ht_tva_20</th>
+		<th>Frais de ports HT: shipping_tax_excl</th>
+		<th>SFsyncDate</th>
+                <th>SFSyncEtat</th>
+                <th>SFSyncErreur</th>
+                <th>MCsyncDate</th>
+                <th>MCSyncEtat</th>
+                <th>MCSyncErreur</th>
             </tr>
         </thead>
         
@@ -80,7 +89,7 @@
                     <button class="btn btn-default" title="Marqué toSync">toSync</button>
                     <button class="btn btn-success" title="Marqué synchronisé">synchronised</button>
                 </td>
-                <td>{$foo['id']}</td>
+                <td>{$foo['id_order']}</td>
                 <td>{$foo['montant']} €</td>
                 <td>{$foo['date']}</td>
                 <td>{$foo['choixPaiement']}</td>
@@ -106,9 +115,18 @@
                 <td>{$foo['pays']}</td>
                 <td>{$foo['newsletter']}</td>
                 <td>{$foo['pasDePapier']}</td>
-                <td>{$foo['syncDate']}</td>
-                <td>{$foo['syncEtat']}</td>
-                <td>{$foo['syncErreur']}</td>
+		<td>{$foo['total_vente_ttc_hp']}</td>
+		<td>{$foo['total_don']}</td>
+		<td>{$foo['total_vente_ht_tva_0']}</td>
+		<td>{$foo['total_vente_ht_tva_5_5']}</td>
+		<td>{$foo['total_vente_ht_tva_20']}</td>
+		<td>{$foo['shipping_tax_excl']}</td>
+                <td>{$foo['SFsyncDate']}</td>
+                <td>{$foo['SFsyncEtat']}</td>
+                <td>{$foo['SFsyncErreur']}</td>
+                <td>{$foo['MCsyncDate']}</td>
+                <td>{$foo['MCsyncEtat']}</td>
+                <td>{$foo['MCsyncErreur']}</td>
             </tr>
         {/foreach}
         </tbody>
