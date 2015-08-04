@@ -30,12 +30,11 @@ define('MAILCHIMP_API_KEY', getenv('MAILCHIMP_API_KEY'));
 define('MAILCHIMP_LIST_ID', getenv('MAILCHIMP_LIST_ID'));
 
 
-require_once('vendor/autoload.php');
-include('src/MailChimp.php');
+require __DIR__ . '/vendor/autoload.php';
 require_once(PRESTASHOP_BASEDIR . '/config/config.inc.php');
 require_once(_PS_MODULE_DIR_ . 'salesforce/classes/SalesforceEntity.php');
 
-$mcApi = new \L214\MailChimp(['apiKey' => MAILCHIMP_API_KEY,
+$mcApi = new L214\MailChimp(['apiKey' => MAILCHIMP_API_KEY,
                               'listID' => MAILCHIMP_LIST_ID,
                               'campaignID' => '']);
 $query = new DbQuery();

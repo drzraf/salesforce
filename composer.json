@@ -1,0 +1,14 @@
+{
+    "repositories": [
+	{
+	    "type": "vcs",
+	    "url": "git@gitlab.com:l214/lib-mailchimp.git"
+	}
+    ],
+    "name": "prestashop-remote-sync",
+    "description": "Cron de synchronisation PrestaShop vers MailChimp et d'autres",
+    "minimum-stability": "dev",
+    "require": {
+	"l214/lib-mailchimp": "master"
+    }
+}
