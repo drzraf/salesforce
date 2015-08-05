@@ -3,6 +3,15 @@
 
 if(PHP_SAPI !== 'cli') exit; // cli only
 
+function dup_error($msg) {
+  // wrapper pour error_log() qui balance *aussi* sur stderr
+  // car error_log = syslog fait disparaître l'affichage sur sortie standard/erreur
+  error_log($msg);
+  $fe = fopen('php://stderr', 'w');
+  fwrite($fe, "$msg\n");
+  fclose($fe);
+}
+
 $options = getopt("d:");
 if(isset($options['d']) && is_dir($options['d'])) {
   define('PRESTASHOP_BASEDIR', $options['d']);
@@ -40,7 +49,7 @@ $mcApi = new L214\MailChimp(['apiKey' => MAILCHIMP_API_KEY,
 $query = new DbQuery();
 $query->select('*')
       ->from('achats_clients_sync')
-  ;//->where('MCsyncEtat = "tosync"');
+      ->where('MCsyncEtat = "tosync"');
 
 // debugging, restrict processing to this email only
 if(getenv('MAILCHIMP_TEST_EMAIL')) {
@@ -65,7 +74,7 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   if(isset($emails_synced[$email]) || isset($ids_excluded[$order->id_client_boutique])) continue;
 
   if(!$email) {
-    error_log("customer data error: id={$order->id_client_boutique}, null/empty email");
+    dup_error("mc-sync: customer data error: id={$order->id_client_boutique}, null/empty email");
     $ids_excluded[$order->id_client_boutique] = 1;
     continue;
   }
@@ -88,17 +97,17 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   $order->save(); */
 
   $ret = $mcApi->subscribeNewsletter($email, $customer->firstname, $customer->lastname,
-                              $cp, $cc, $language->iso_code,
-                              'PrestaShop', 'html', FALSE, TRUE);
-  if($ret) {
+                                     $cp, $cc, $language->iso_code,
+                                     'PrestaShop', 'html', FALSE, TRUE);
+  if($ret !== FALSE) {
     $emails_synced[$email] = 1;
-    $msg = "mailchimp/prestashop: $email: newsletter=$newsletter";
-    if(isset($userInfo['status'])) $msg.= sprintf(' (previous status was "%s")',
-                                                  $userInfo["status"]);
-    error_log($msg);
+    $msg = "mc-sync: mailchimp/prestashop: $email: newsletter=$newsletter";
+    if(isset($userInfo['status'])) $msg.= sprintf(' (previous status was "%s")', $userInfo["status"]);
+    $msg .= sprintf(' euid=%s, leid=%s', $ret['euid'], $ret['leid']);
+    dup_error($msg);
   }
   else {
-    die("error during synchronisation: email=$email, id_order={$order->id_order}");
+    dup_error("mc-sync: error during synchronisation: email=$email, id_order={$order->id_order}");
   }
 }
 
