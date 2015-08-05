@@ -51,6 +51,7 @@ if(getenv('MAILCHIMP_TEST_EMAIL')) {
 // whereas MailChimp is keyed by email
 // ... keep a trace of processed email just avoid multiple mailchimp sync for a given email.
 $emails_synced = [];
+$ids_excluded = [];
 
 foreach(Db::getInstance()->ExecuteS($query) as $o) {
   $order = (object)($o);
@@ -60,7 +61,14 @@ foreach(Db::getInstance()->ExecuteS($query) as $o) {
   $language = new Language($customer->id_lang);
   
   $email = $customer->email; // normally: same as $order->courriel
-  if(isset($emails_synced[$email])) continue;
+
+  if(isset($emails_synced[$email]) || isset($ids_excluded[$order->id_client_boutique])) continue;
+
+  if(!$email) {
+    error_log("customer data error: id={$order->id_client_boutique}, null/empty email");
+    $ids_excluded[$order->id_client_boutique] = 1;
+    continue;
+  }
 
   $newsletter = $customer->newsletter; // normally: same as $order->newsletter
 

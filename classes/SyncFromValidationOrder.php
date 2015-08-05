@@ -232,6 +232,11 @@ class SyncFromValidationOrder extends SalesforceEntity {
                                                              . (int)$customer->id) == 0;
 
     $order = new Order(Order::getOrderByCartId($context->cart->id));
+    if(! $order->id) {
+      error_log("order->id is null/empty!");
+      return; // avoid storing/synchronizing obviously corrupted data
+    }
+
     $address = new Address(Address::getFirstCustomerAddressId($customer->id));
     $products = $cart->getProducts();
 
